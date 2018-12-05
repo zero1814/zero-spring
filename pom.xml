@@ -29,5 +29,13 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.zero.commons</groupId>
+			<artifactId>commons-basics</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
+	<modules>
+		<module>zero-spring-jpa</module>
+	</modules>
 </project>
