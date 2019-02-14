@@ -44,5 +44,6 @@
 		<module>zero-spring-mybatis</module>
 		<module>zero-spring-cache</module>
     <module>zero-spring-hadoop</module>
+    <module>zero-spring-elasticsearch</module>
   </modules>
 </project>

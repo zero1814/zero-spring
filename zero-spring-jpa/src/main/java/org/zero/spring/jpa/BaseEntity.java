@@ -25,10 +25,13 @@ public class BaseEntity implements Serializable {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
 
+	@Column(name = "uid", length = 50, unique = true)
+	private String uid;
+
 	@Column(name = "code", length = 50, unique = true)
 	private String code;
 
-	@Column(name = "code", length = 50, insertable = true, updatable = false, nullable = false)
+	@Column(name = "create_user", length = 50, insertable = true, updatable = false, nullable = false)
 	private String createUser;
 
 	@Column(name = "create_time", insertable = true, updatable = false, nullable = false)
@@ -37,7 +40,7 @@ public class BaseEntity implements Serializable {
 	@Column(name = "update_user", length = 50, insertable = true, updatable = true, nullable = false)
 	private String updateUser;
 
-	@Column(name = "code", length = 50, insertable = true, updatable = true, nullable = false)
+	@Column(name = "update_time", length = 50, insertable = true, updatable = true, nullable = false)
 	private Date updateTime;
 
 	/**

@@ -1,6 +1,5 @@
 package org.zero.spring.mybatis;
 
-import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -8,15 +7,12 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.zero.spring.mybatis.annotation.Insert;
-import org.zero.spring.mybatis.annotation.Update;
 
 import com.github.pagehelper.ISelect;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 
 import zero.commons.basics.DateUtil;
-import zero.commons.basics.ObjectUtil;
 import zero.commons.basics.StringUtils;
 import zero.commons.basics.result.BaseResult;
 import zero.commons.basics.result.DataResult;
@@ -54,12 +50,7 @@ public class BaseServiceImpl<T extends BaseEntity, M extends IBaseMapper<T, DTO>
 	@Override
 	public BaseResult insert(T entity) {
 		logger.info("开始执行insert(T entity)方法");
-		BaseResult result = vertify(entity, OperationType.INSERT);
-		if (entity == null) {
-			result.setCode(ResultType.NULL);
-			result.setMessage("参数对象不能为空");
-			return result;
-		}
+		BaseResult result = new BaseResult();
 		try {
 			if (StringUtils.isNotBlank(entity.getCode())) {
 				T t = mapper.select(entity.getCode());
@@ -104,7 +95,7 @@ public class BaseServiceImpl<T extends BaseEntity, M extends IBaseMapper<T, DTO>
 	@Override
 	public BaseResult insert(T entity, DTO dto) {
 		logger.info("开始执行insert(T entity, DTO dto)方法");
-		BaseResult result = vertify(entity, OperationType.INSERT);
+		BaseResult result = new BaseResult();
 		if (entity == null || dto == null) {
 			result.setCode(ResultType.ERROR);
 			result.setMessage("参数对象不能为空");
@@ -683,45 +674,4 @@ public class BaseServiceImpl<T extends BaseEntity, M extends IBaseMapper<T, DTO>
 		return result;
 	}
 
-	public BaseResult vertify(T entity, OperationType type) {
-		BaseResult result = new BaseResult();
-		try {
-			if (entity == null) {
-				result.setCode(ResultType.NULL);
-				result.setMessage("数据对象不能为空");
-				return result;
-			}
-			Field[] fields = entity.getClass().getDeclaredFields();
-			for (Field field : fields) {
-				if (type == OperationType.INSERT && field.isAnnotationPresent(Insert.class)) {
-					// 添加验证
-					Insert insert = field.getAnnotation(Insert.class);
-					if (insert.vertify()) {
-						Object value = ObjectUtil.getFieldValueByName(field.getName(), entity);
-						if (value == null || value == "") {
-							result.setCode(ResultType.NULL);
-							result.setMessage(insert.alert());
-							return result;
-						}
-					}
-				} else if (type == OperationType.UPDATE && field.isAnnotationPresent(Update.class)) {
-					// 编辑验证
-					Update update = field.getAnnotation(Update.class);
-					if (update.vertify()) {
-						Object value = ObjectUtil.getFieldValueByName(field.getName(), entity.getClass());
-						if (value == null || value == "") {
-							result.setCode(ResultType.NULL);
-							result.setMessage(update.alert());
-							return result;
-						}
-					}
-				}
-			}
-		} catch (Exception e) {
-			logger.error(e.getMessage());
-			result.setCode(ResultType.ERROR);
-			result.setMessage("数据验证错误");
-		}
-		return result;
-	}
 }
