@@ -4,10 +4,9 @@ import java.io.Serializable;
 import java.util.Date;
 
 import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
+import javax.persistence.Transient;
 
 /**
  * 
@@ -21,13 +20,10 @@ public class BaseEntity implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	private Long id;
-
 	@Column(name = "uid", length = 50, unique = true)
 	private String uid;
 
+	@Id
 	@Column(name = "code", length = 50, unique = true)
 	private String code;
 
@@ -46,19 +42,21 @@ public class BaseEntity implements Serializable {
 	/**
 	 * 当前页
 	 */
+	@Transient
 	private int page;
 
 	/**
 	 * 页面显示最大数
 	 */
+	@Transient
 	private int size;
 
-	public Long getId() {
-		return id;
+	public String getUid() {
+		return uid;
 	}
 
-	public void setId(Long id) {
-		this.id = id;
+	public void setUid(String uid) {
+		this.uid = uid;
 	}
 
 	public String getCode() {

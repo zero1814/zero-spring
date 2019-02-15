@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.ibatis.jdbc.SQL;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zero.spring.mybatis.annotation.Column;
 import org.zero.spring.mybatis.annotation.Operation;
 import org.zero.spring.mybatis.annotation.Table;
@@ -15,6 +17,8 @@ import zero.commons.basics.ObjectUtil;
 import zero.commons.basics.StringUtils;
 
 public class BaseProvider<T> {
+
+	private static final Logger logger = LoggerFactory.getLogger(BaseProvider.class);
 
 	/**
 	 * 
@@ -27,6 +31,7 @@ public class BaseProvider<T> {
 	 * @return
 	 */
 	public String insert(T entity) {
+		logger.info("开始生成insert语句，添加对象为：" + entity.toString());
 		if (entity != null && entity.getClass().isAnnotationPresent(Table.class)) {
 			Table table = entity.getClass().getAnnotation(Table.class);
 			List<Map<String, String>> params = params(entity, Operation.INSERT);
@@ -41,7 +46,7 @@ public class BaseProvider<T> {
 				}.toString();
 			}
 		}
-		return null;
+		return "";
 	}
 
 	/**

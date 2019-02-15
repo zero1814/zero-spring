@@ -1,5 +1,6 @@
 package org.zero.spring.jpa;
 
+import java.util.Date;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -35,6 +36,9 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 	public EntityResult<T> insert(T entity) {
 		EntityResult<T> result = new EntityResult<T>();
 		try {
+			entity.setCreateTime(new Date());
+			entity.setUpdateUser(entity.getCreateUser());
+			entity.setUpdateTime(entity.getCreateTime());
 			T t = repository.saveAndFlush(entity);
 			result.setEntity(t);
 			result.setCode(ResultType.SUCCESS);
