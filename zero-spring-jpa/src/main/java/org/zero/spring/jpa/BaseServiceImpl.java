@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import zero.commons.basics.helper.CodeHelper;
 import zero.commons.basics.result.BaseResult;
 import zero.commons.basics.result.DataResult;
 import zero.commons.basics.result.EntityResult;
@@ -36,6 +37,7 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 	public EntityResult<T> insert(T entity) {
 		EntityResult<T> result = new EntityResult<T>();
 		try {
+			entity.setUid(CodeHelper.getUUID());
 			entity.setCreateTime(new Date());
 			entity.setUpdateUser(entity.getCreateUser());
 			entity.setUpdateTime(entity.getCreateTime());
@@ -242,7 +244,7 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 	public PageResult<T> page(T entity) {
 		PageResult<T> result = new PageResult<T>();
 		try {
-			Pageable request = PageRequest.of(entity.getPage(), entity.getSize());
+			Pageable request = PageRequest.of(entity.getPage()-1, entity.getSize());
 			Page<T> page = repository.findAll(request);
 			if (page == null) {
 				result.setCode(ResultType.NULL);
