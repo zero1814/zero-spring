@@ -39,7 +39,7 @@ public interface IBaseService<T extends BaseEntity, ID> {
 	 * @param entity
 	 * @return
 	 */
-	EntityResult<T> update(T entity);
+	EntityResult<T> update(T entity,ID id);
 
 	/**
 	 * 

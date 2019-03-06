@@ -63,11 +63,10 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 	 * @see org.zero.spring.jpa.IBaseService#update(org.zero.spring.jpa.BaseEntity)
 	 */
 	@Override
-	public EntityResult<T> update(T entity) {
+	public EntityResult<T> update(T entity,ID id) {
 		EntityResult<T> result = new EntityResult<T>();
 		try {
-			Example<T> example = Example.of(entity);
-			T selEntity = repository.findOne(example).get();
+			T selEntity = repository.findById(id).get();
 			if (selEntity != null) {
 				T t = repository.saveAndFlush(entity);
 				repository.flush();
@@ -82,7 +81,7 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 		} catch (Exception e) {
 			logger.error(e.getMessage(), BaseServiceImpl.class);
 			result.setCode(ResultType.ERROR);
-			result.setMessage("执行添加方法报错，错误原因：\n" + e.getMessage());
+			result.setMessage("执行编辑方法报错，错误原因：\n" + e.getMessage());
 			return result;
 		}
 	}
