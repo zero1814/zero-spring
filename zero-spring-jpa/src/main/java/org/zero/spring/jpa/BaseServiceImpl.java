@@ -10,6 +10,8 @@ import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Order;
 
 import com.alibaba.fastjson.JSON;
 
@@ -227,8 +229,13 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 	public DataResult<T> selectAll(T entity) {
 		DataResult<T> result = new DataResult<T>();
 		try {
-			Example<T> example = Example.of(entity);
-			List<T> data = repository.findAll(example);
+			List<T> data = null;
+			if (entity != null) {
+				Example<T> example = Example.of(entity);
+				data = repository.findAll(example);
+			} else {
+				data = repository.findAll(Sort.by(Order.asc("create_time")));
+			}
 			if (data != null && data.size() > 0) {
 				result.setData(data);
 				result.setCode(ResultType.SUCCESS);
