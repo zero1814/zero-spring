@@ -11,6 +11,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import com.alibaba.fastjson.JSON;
+
 import zero.commons.basics.helper.CodeHelper;
 import zero.commons.basics.result.BaseResult;
 import zero.commons.basics.result.DataResult;
@@ -35,6 +37,7 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 	 */
 	@Override
 	public EntityResult<T> insert(T entity) {
+		logger.info("请求参数：" + JSON.toJSONString(entity));
 		EntityResult<T> result = new EntityResult<T>();
 		try {
 			entity.setUid(CodeHelper.getUUID());
@@ -63,12 +66,14 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 	 * @see org.zero.spring.jpa.IBaseService#update(org.zero.spring.jpa.BaseEntity)
 	 */
 	@Override
-	public EntityResult<T> update(T entity,ID id) {
+	public EntityResult<T> update(T entity, ID id) {
+		logger.info("请求参数：" + JSON.toJSONString(entity));
 		EntityResult<T> result = new EntityResult<T>();
 		try {
 			T selEntity = repository.findById(id).get();
 			if (selEntity != null) {
-				T t = repository.saveAndFlush(entity);
+				entity.setUpdateTime(new Date());
+				T t = repository.save(entity);
 				repository.flush();
 				result.setEntity(t);
 				result.setCode(ResultType.SUCCESS);
@@ -96,6 +101,7 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 	 */
 	@Override
 	public EntityResult<T> select(T entity) {
+		logger.info("请求参数：" + JSON.toJSONString(entity));
 		EntityResult<T> result = new EntityResult<T>();
 		try {
 			Example<T> example = Example.of(entity);
@@ -157,6 +163,7 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 	 */
 	@Override
 	public BaseResult delete(T entity) {
+		logger.info("请求参数：" + JSON.toJSONString(entity));
 		EntityResult<T> result = new EntityResult<T>();
 		try {
 			Example<T> example = Example.of(entity);
@@ -241,9 +248,10 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 
 	@Override
 	public PageResult<T> page(T entity) {
+		logger.info("请求参数：" + JSON.toJSONString(entity));
 		PageResult<T> result = new PageResult<T>();
 		try {
-			Pageable request = PageRequest.of(entity.getPage()-1, entity.getSize());
+			Pageable request = PageRequest.of(entity.getPage() - 1, entity.getSize());
 			Page<T> page = repository.findAll(request);
 			if (page == null) {
 				result.setCode(ResultType.NULL);

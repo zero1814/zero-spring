@@ -20,11 +20,11 @@ public class BaseEntity implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	@Column(name = "uid", length = 50, unique = true)
+	@Column(name = "uid", length = 50, unique = true,updatable=false)
 	private String uid;
 
 	@Id
-	@Column(name = "code", length = 50, unique = true)
+	@Column(name = "code", length = 50, unique = true,updatable=false)
 	private String code;
 
 	@Column(name = "create_user", length = 50, insertable = true, updatable = false, nullable = false)
