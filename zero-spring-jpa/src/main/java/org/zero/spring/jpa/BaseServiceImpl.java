@@ -1,5 +1,6 @@
 package org.zero.spring.jpa;
 
+import java.lang.reflect.Field;
 import java.util.Date;
 import java.util.List;
 
@@ -7,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.fastjson.JSON;
 
+import zero.commons.basics.StringUtils;
 import zero.commons.basics.helper.CodeHelper;
 import zero.commons.basics.result.BaseResult;
 import zero.commons.basics.result.DataResult;
@@ -262,8 +265,15 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 		logger.info("请求参数：" + JSON.toJSONString(entity));
 		PageResult<T> result = new PageResult<T>();
 		try {
+			ExampleMatcher matcher = ExampleMatcher.matching();
+			Field[] fields = entity.getClass().getDeclaredFields();
+			for (Field field : fields) {
+				if (StringUtils.equals(field.getType().toString(), "class java.lang.String")) {
+					matcher = matcher.withMatcher(field.getName(), ExampleMatcher.GenericPropertyMatchers.contains());
+				}
+			}
 			Pageable request = PageRequest.of(entity.getPage() - 1, entity.getSize());
-			Page<T> page = repository.findAll(request);
+			Page<T> page = repository.findAll(Example.of(entity, matcher), request);
 			if (page == null) {
 				result.setCode(ResultType.NULL);
 				result.setMessage("查询分页数据为空");
@@ -293,4 +303,5 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 		}
 		return name.toString();
 	}
+
 }
