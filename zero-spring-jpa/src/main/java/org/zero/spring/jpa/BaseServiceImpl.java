@@ -12,6 +12,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.fastjson.JSON;
 
@@ -37,11 +38,14 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 	 * @return
 	 * @see org.zero.spring.jpa.IBaseService#insert(org.zero.spring.jpa.BaseEntity)
 	 */
+	@Transactional
 	@Override
 	public EntityResult<T> insert(T entity) {
 		logger.info("请求参数：" + JSON.toJSONString(entity));
 		EntityResult<T> result = new EntityResult<T>();
 		try {
+			String prefix = prefix(entity.getClass());// 获取code前缀
+			entity.setCode(CodeHelper.getCode(prefix));
 			entity.setUid(CodeHelper.getUUID());
 			entity.setCreateTime(new Date());
 			entity.setUpdateUser(entity.getCreateUser());
@@ -276,5 +280,17 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 			result.setMessage("执行查询分页方法报错，错误原因：\n" + e.getMessage());
 			return result;
 		}
+	}
+
+	private static String prefix(Class<?> clazz) {
+		String className = clazz.getSimpleName();
+		char[] chars = className.toCharArray();
+		StringBuffer name = new StringBuffer();
+		for (char c : chars) {
+			if (Character.isUpperCase(c)) {
+				name.append(c);
+			}
+		}
+		return name.toString();
 	}
 }
