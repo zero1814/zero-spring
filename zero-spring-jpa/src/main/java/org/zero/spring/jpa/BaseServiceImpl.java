@@ -180,7 +180,7 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 			if (selEntity != null) {
 				repository.delete(selEntity);
 				result.setCode(ResultType.SUCCESS);
-				result.setMessage("编辑成功");
+				result.setMessage("删除成功");
 			} else {
 				result.setCode(ResultType.NULL);
 				result.setMessage("查询对象不存在");
@@ -210,7 +210,7 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 			if (selEntity != null) {
 				repository.delete(selEntity);
 				result.setCode(ResultType.SUCCESS);
-				result.setMessage("编辑成功");
+				result.setMessage("删除成功");
 			} else {
 				result.setCode(ResultType.NULL);
 				result.setMessage("查询对象不存在");
