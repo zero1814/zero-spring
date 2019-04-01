@@ -45,5 +45,6 @@
 		<module>zero-spring-cache</module>
     <module>zero-spring-hadoop</module>
     <module>zero-spring-elasticsearch</module>
+    <module>zero-spring-base</module>
   </modules>
 </project>

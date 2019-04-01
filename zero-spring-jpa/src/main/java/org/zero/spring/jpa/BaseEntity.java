@@ -8,6 +8,9 @@ import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Transient;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * 
  * 类: BaseEntity <br>
@@ -15,16 +18,18 @@ import javax.persistence.Transient;
  * 作者: zhy<br>
  * 时间: 2018年12月5日 上午11:34:53
  */
+@Getter
+@Setter
 @MappedSuperclass
 public class BaseEntity implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	@Column(name = "uid", length = 50, unique = true,updatable=false)
+	@Column(name = "uid", length = 50, unique = true, updatable = false)
 	private String uid;
 
 	@Id
-	@Column(name = "code", length = 50, unique = true,updatable=false)
+	@Column(name = "code", length = 50, unique = true, updatable = false)
 	private String code;
 
 	@Column(name = "create_user", length = 50, insertable = true, updatable = false, nullable = false)
@@ -50,69 +55,5 @@ public class BaseEntity implements Serializable {
 	 */
 	@Transient
 	private int size;
-
-	public String getUid() {
-		return uid;
-	}
-
-	public void setUid(String uid) {
-		this.uid = uid;
-	}
-
-	public String getCode() {
-		return code;
-	}
-
-	public void setCode(String code) {
-		this.code = code;
-	}
-
-	public String getCreateUser() {
-		return createUser;
-	}
-
-	public void setCreateUser(String createUser) {
-		this.createUser = createUser;
-	}
-
-	public Date getCreateTime() {
-		return createTime;
-	}
-
-	public void setCreateTime(Date createTime) {
-		this.createTime = createTime;
-	}
-
-	public String getUpdateUser() {
-		return updateUser;
-	}
-
-	public void setUpdateUser(String updateUser) {
-		this.updateUser = updateUser;
-	}
-
-	public Date getUpdateTime() {
-		return updateTime;
-	}
-
-	public void setUpdateTime(Date updateTime) {
-		this.updateTime = updateTime;
-	}
-
-	public int getPage() {
-		return page;
-	}
-
-	public void setPage(int page) {
-		this.page = page;
-	}
-
-	public int getSize() {
-		return size;
-	}
-
-	public void setSize(int size) {
-		this.size = size;
-	}
 
 }
