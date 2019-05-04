@@ -1,11 +1,8 @@
 package org.zero.spring.jpa;
 
-import java.lang.reflect.Field;
 import java.util.Date;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
@@ -18,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.alibaba.fastjson.JSON;
 
-import zero.commons.basics.StringUtils;
+import lombok.extern.slf4j.Slf4j;
 import zero.commons.basics.helper.CodeHelper;
 import zero.commons.basics.result.BaseResult;
 import zero.commons.basics.result.DataResult;
@@ -26,9 +23,8 @@ import zero.commons.basics.result.EntityResult;
 import zero.commons.basics.result.PageResult;
 import zero.commons.basics.result.ResultType;
 
+@Slf4j
 public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<T, ID>> implements IBaseService<T, ID> {
-
-	private static final Logger logger = LoggerFactory.getLogger(BaseServiceImpl.class);
 
 	@Autowired
 	private R repository;
@@ -44,7 +40,7 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 	@Transactional
 	@Override
 	public EntityResult<T> insert(T entity) {
-		logger.info("请求参数：" + JSON.toJSONString(entity));
+		log.info("请求参数：" + JSON.toJSONString(entity));
 		EntityResult<T> result = new EntityResult<T>();
 		try {
 			String prefix = prefix(entity.getClass());// 获取code前缀
@@ -59,7 +55,7 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 			result.setMessage("添加成功");
 			return result;
 		} catch (Exception e) {
-			logger.error(e.getMessage(), BaseServiceImpl.class);
+			log.error(e.getMessage(), BaseServiceImpl.class);
 			result.setCode(ResultType.ERROR);
 			result.setMessage("执行添加方法报，错误原因：\n" + e.getMessage());
 			return result;
@@ -76,7 +72,7 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 	 */
 	@Override
 	public EntityResult<T> update(T entity, ID id) {
-		logger.info("请求参数：" + JSON.toJSONString(entity));
+		log.info("请求参数：" + JSON.toJSONString(entity));
 		EntityResult<T> result = new EntityResult<T>();
 		try {
 			T selEntity = repository.findById(id).get();
@@ -93,7 +89,7 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 			}
 			return result;
 		} catch (Exception e) {
-			logger.error(e.getMessage(), BaseServiceImpl.class);
+			log.error(e.getMessage(), BaseServiceImpl.class);
 			result.setCode(ResultType.ERROR);
 			result.setMessage("执行编辑方法报错，错误原因：\n" + e.getMessage());
 			return result;
@@ -110,10 +106,15 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 	 */
 	@Override
 	public EntityResult<T> select(T entity) {
-		logger.info("请求参数：" + JSON.toJSONString(entity));
+		log.info("请求参数：" + JSON.toJSONString(entity));
 		EntityResult<T> result = new EntityResult<T>();
 		try {
 			Example<T> example = Example.of(entity);
+			if (!repository.findOne(example).isPresent()) {
+				result.setCode(ResultType.NULL);
+				result.setMessage("查询对象不存在");
+				return result;
+			}
 			T selEntity = repository.findOne(example).get();
 			if (selEntity == null) {
 				result.setCode(ResultType.NULL);
@@ -125,7 +126,7 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 			result.setMessage("查询成功");
 			return result;
 		} catch (Exception e) {
-			logger.error(e.getMessage(), BaseServiceImpl.class);
+			log.error(e.getMessage(), BaseServiceImpl.class);
 			result.setCode(ResultType.ERROR);
 			result.setMessage("执行查询方法报错，错误原因：\n" + e.getMessage());
 			return result;
@@ -144,18 +145,18 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 	public EntityResult<T> select(ID id) {
 		EntityResult<T> result = new EntityResult<T>();
 		try {
-			T selEntity = repository.findById(id).get();
-			if (selEntity == null) {
+			if (!repository.findById(id).isPresent()) {
 				result.setCode(ResultType.NULL);
 				result.setMessage("查询对象不存在");
 				return result;
 			}
+			T selEntity = repository.findById(id).get();
 			result.setEntity(selEntity);
 			result.setCode(ResultType.SUCCESS);
 			result.setMessage("查询成功");
 			return result;
 		} catch (Exception e) {
-			logger.error(e.getMessage(), BaseServiceImpl.class);
+			log.error(e.getMessage(), BaseServiceImpl.class);
 			result.setCode(ResultType.ERROR);
 			result.setMessage("执行查询方法报错，错误原因：\n" + e.getMessage());
 			return result;
@@ -172,22 +173,22 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 	 */
 	@Override
 	public BaseResult delete(T entity) {
-		logger.info("请求参数：" + JSON.toJSONString(entity));
+		log.info("请求参数：" + JSON.toJSONString(entity));
 		EntityResult<T> result = new EntityResult<T>();
 		try {
 			Example<T> example = Example.of(entity);
-			T selEntity = repository.findOne(example).get();
-			if (selEntity != null) {
-				repository.delete(selEntity);
-				result.setCode(ResultType.SUCCESS);
-				result.setMessage("删除成功");
-			} else {
+			if (!repository.findOne(example).isPresent()) {
 				result.setCode(ResultType.NULL);
 				result.setMessage("查询对象不存在");
+				return result;
 			}
+			T selEntity = repository.findOne(example).get();
+			repository.delete(selEntity);
+			result.setCode(ResultType.SUCCESS);
+			result.setMessage("删除成功");
 			return result;
 		} catch (Exception e) {
-			logger.error(e.getMessage(), BaseServiceImpl.class);
+			log.error(e.getMessage(), BaseServiceImpl.class);
 			result.setCode(ResultType.ERROR);
 			result.setMessage("执行删除方法报错，错误原因：\n" + e.getMessage());
 			return result;
@@ -206,22 +207,22 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 	public BaseResult delete(ID id) {
 		EntityResult<T> result = new EntityResult<T>();
 		try {
-			T selEntity = repository.findById(id).get();
-			if (selEntity != null) {
-				repository.delete(selEntity);
-				result.setCode(ResultType.SUCCESS);
-				result.setMessage("删除成功");
-			} else {
+			if (!repository.findById(id).isPresent()) {
 				result.setCode(ResultType.NULL);
 				result.setMessage("查询对象不存在");
+				return result;
 			}
-			return result;
+			T selEntity = repository.findById(id).get();
+			repository.delete(selEntity);
+			result.setCode(ResultType.SUCCESS);
+			result.setMessage("删除成功");
 		} catch (Exception e) {
-			logger.error(e.getMessage(), BaseServiceImpl.class);
+			log.error(e.getMessage(), BaseServiceImpl.class);
 			result.setCode(ResultType.ERROR);
 			result.setMessage("执行删除方法报错，错误原因：\n" + e.getMessage());
-			return result;
+
 		}
+		return result;
 	}
 
 	/**
@@ -241,7 +242,7 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 				Example<T> example = Example.of(entity);
 				data = repository.findAll(example);
 			} else {
-				data = repository.findAll(Sort.by(Order.asc("create_time")));
+				data = repository.findAll(Sort.by(Order.asc("createTime")));
 			}
 			if (data != null && data.size() > 0) {
 				result.setData(data);
@@ -253,7 +254,7 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 			}
 			return result;
 		} catch (Exception e) {
-			logger.error(e.getMessage(), BaseServiceImpl.class);
+			log.error(e.getMessage(), BaseServiceImpl.class);
 			result.setCode(ResultType.ERROR);
 			result.setMessage("执行查询所有方法报错，错误原因：\n" + e.getMessage());
 			return result;
@@ -262,16 +263,10 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 
 	@Override
 	public PageResult<T> page(T entity) {
-		logger.info("请求参数：" + JSON.toJSONString(entity));
+		log.info("请求参数：" + JSON.toJSONString(entity));
 		PageResult<T> result = new PageResult<T>();
 		try {
 			ExampleMatcher matcher = ExampleMatcher.matching();
-			Field[] fields = entity.getClass().getDeclaredFields();
-			for (Field field : fields) {
-				if (StringUtils.equals(field.getType().toString(), "class java.lang.String")) {
-					matcher = matcher.withMatcher(field.getName(), ExampleMatcher.GenericPropertyMatchers.contains());
-				}
-			}
 			Pageable request = PageRequest.of(entity.getPage() - 1, entity.getSize());
 			Page<T> page = repository.findAll(Example.of(entity, matcher), request);
 			if (page == null) {
@@ -285,7 +280,7 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 			result.setMessage("查询分页数据成功");
 			return result;
 		} catch (Exception e) {
-			logger.error(e.getMessage(), BaseServiceImpl.class);
+			log.error(e.getMessage(), BaseServiceImpl.class);
 			result.setCode(ResultType.ERROR);
 			result.setMessage("执行查询分页方法报错，错误原因：\n" + e.getMessage());
 			return result;
@@ -303,5 +298,4 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 		}
 		return name.toString();
 	}
-
 }

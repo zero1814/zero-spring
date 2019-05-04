@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.zero.spring</groupId>
@@ -37,14 +38,18 @@
 			<artifactId>commons-basics</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+		</dependency>
 	</dependencies>
 	<modules>
 		<module>zero-spring-jpa</module>
 		<module>zero-spring-mongo</module>
 		<module>zero-spring-mybatis</module>
 		<module>zero-spring-cache</module>
-    <module>zero-spring-hadoop</module>
-    <module>zero-spring-elasticsearch</module>
-    <module>zero-spring-base</module>
-  </modules>
+		<module>zero-spring-hadoop</module>
+		<module>zero-spring-elasticsearch</module>
+		<module>zero-spring-base</module>
+	</modules>
 </project>
