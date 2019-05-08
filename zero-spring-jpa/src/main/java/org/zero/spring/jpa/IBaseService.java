@@ -19,7 +19,7 @@ public interface IBaseService<T extends BaseEntity, ID> {
 
 	/**
 	 * 
-	 * 方法: insert <br>
+	 * 方法: create <br>
 	 * 描述: 添加对象 <br>
 	 * 作者: zhy<br>
 	 * 时间: 2018年12月5日 下午2:41:54
@@ -27,7 +27,7 @@ public interface IBaseService<T extends BaseEntity, ID> {
 	 * @param entity
 	 * @return
 	 */
-	EntityResult<T> insert(T entity);
+	EntityResult<T> create(T entity);
 
 	/**
 	 * 
@@ -39,7 +39,7 @@ public interface IBaseService<T extends BaseEntity, ID> {
 	 * @param entity
 	 * @return
 	 */
-	EntityResult<T> update(T entity,ID id);
+	EntityResult<T> update(T entity, ID id);
 
 	/**
 	 * 

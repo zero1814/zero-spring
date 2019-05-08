@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.alibaba.fastjson.JSON;
 
 import lombok.extern.slf4j.Slf4j;
+import zero.commons.basics.ObjectUtil;
 import zero.commons.basics.helper.CodeHelper;
 import zero.commons.basics.result.BaseResult;
 import zero.commons.basics.result.DataResult;
@@ -23,6 +24,7 @@ import zero.commons.basics.result.EntityResult;
 import zero.commons.basics.result.PageResult;
 import zero.commons.basics.result.ResultType;
 
+@SuppressWarnings("unchecked")
 @Slf4j
 public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<T, ID>> implements IBaseService<T, ID> {
 
@@ -39,7 +41,7 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 	 */
 	@Transactional
 	@Override
-	public EntityResult<T> insert(T entity) {
+	public EntityResult<T> create(T entity) {
 		log.info("请求参数：" + JSON.toJSONString(entity));
 		EntityResult<T> result = new EntityResult<T>();
 		try {
@@ -239,8 +241,10 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 		try {
 			List<T> data = null;
 			if (entity != null) {
-				Example<T> example = Example.of(entity);
-				data = repository.findAll(example);
+				T _obj = (T) ObjectUtil.newObject(entity);
+				ExampleMatcher matcher = JpaUtil.getMatcher(_obj);
+				Example<T> example = Example.of(entity, matcher);
+				data = repository.findAll(example, Sort.by(Order.asc("createTime")));
 			} else {
 				data = repository.findAll(Sort.by(Order.asc("createTime")));
 			}
@@ -266,9 +270,10 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 		log.info("请求参数：" + JSON.toJSONString(entity));
 		PageResult<T> result = new PageResult<T>();
 		try {
-			ExampleMatcher matcher = ExampleMatcher.matching();
+			T _obj = (T) ObjectUtil.newObject(entity);
+			ExampleMatcher matcher = JpaUtil.getMatcher(_obj);
 			Pageable request = PageRequest.of(entity.getPage() - 1, entity.getSize());
-			Page<T> page = repository.findAll(Example.of(entity, matcher), request);
+			Page<T> page = repository.findAll(Example.of(_obj, matcher), request);
 			if (page == null) {
 				result.setCode(ResultType.NULL);
 				result.setMessage("查询分页数据为空");
@@ -280,6 +285,7 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 			result.setMessage("查询分页数据成功");
 			return result;
 		} catch (Exception e) {
+			e.printStackTrace();
 			log.error(e.getMessage(), BaseServiceImpl.class);
 			result.setCode(ResultType.ERROR);
 			result.setMessage("执行查询分页方法报错，错误原因：\n" + e.getMessage());
@@ -297,5 +303,17 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 			}
 		}
 		return name.toString();
+	}
+
+	public static void main(String[] args) {
+		BaseEntity entity = new BaseEntity();
+		entity.setCode("123456");
+		entity.setCreateTime(new Date());
+		try {
+			System.out.println(ObjectUtil.getFiledsInfo(entity));
+			;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }
