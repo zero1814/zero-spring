@@ -42,7 +42,6 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 	@Transactional
 	@Override
 	public EntityResult<T> create(T entity) {
-		log.info("请求参数：" + JSON.toJSONString(entity));
 		EntityResult<T> result = new EntityResult<T>();
 		try {
 			String prefix = prefix(entity.getClass());// 获取code前缀
@@ -51,6 +50,7 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 			entity.setCreateTime(new Date());
 			entity.setUpdateUser(entity.getCreateUser());
 			entity.setUpdateTime(entity.getCreateTime());
+			log.info("请求参数：" + JSON.toJSONString(entity));
 			T t = repository.saveAndFlush(entity);
 			result.setEntity(t);
 			result.setCode(ResultType.SUCCESS);
