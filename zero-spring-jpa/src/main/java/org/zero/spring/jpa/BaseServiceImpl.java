@@ -17,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.transaction.annotation.Transactional;
+import org.zero.spring.jpa.annotaion.OperationType;
 
 import com.alibaba.fastjson.JSON;
 
@@ -55,7 +56,7 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 			entity.setCreateTime(new Date());
 			entity.setUpdateUser(entity.getCreateUser());
 			entity.setUpdateTime(entity.getCreateTime());
-			completionFieldValue(entity);
+			completionFieldValue(entity, OperationType.Insert);
 			log.info("完整请求参数：" + JSON.toJSONString(entity));
 			T t = repository.saveAndFlush(entity);
 			result.setEntity(t);
@@ -86,6 +87,7 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 			T selEntity = repository.findById(id).get();
 			if (selEntity != null) {
 				entity.setUpdateTime(new Date());
+				completionFieldValue(entity, OperationType.Update);
 				T t = repository.save(entity);
 				repository.flush();
 				result.setEntity(t);
@@ -300,8 +302,17 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 	}
 
 	@SuppressWarnings("rawtypes")
-	private void completionFieldValue(T entity) {
+	private void completionFieldValue(T entity, OperationType type) {
 		Field[] fields = entity.getClass().getDeclaredFields();
+		String user = null;
+		Date time = null;
+		if (type == OperationType.Insert) {
+			user = entity.getCreateUser();
+			time = entity.getCreateTime();
+		} else if (type == OperationType.Update) {
+			user = entity.getUpdateUser();
+			time = entity.getUpdateTime();
+		}
 		try {
 			for (Field f : fields) {
 				if (StringUtils.equalsAny(f.getName(), "serialVersionUID")) {
@@ -342,11 +353,10 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 										}
 									} else if (StringUtils.equals(field.getName(), "createUser")
 											|| StringUtils.equals(field.getName(), "updateUser")) {
-										ObjectUtil.setFieldValueByName(name, entity.getCreateUser(), object);
-
+										ObjectUtil.setFieldValueByName(name, user, object);
 									} else if (StringUtils.equals(field.getName(), "createTime")
 											|| StringUtils.equals(field.getName(), "updateTime")) {
-										ObjectUtil.setFieldValueByName(name, entity.getCreateTime(), object);
+										ObjectUtil.setFieldValueByName(name, time, object);
 									}
 								}
 							}
