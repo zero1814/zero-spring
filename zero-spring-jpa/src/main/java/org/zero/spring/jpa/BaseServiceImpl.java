@@ -1,8 +1,13 @@
 package org.zero.spring.jpa;
 
+import java.lang.reflect.Field;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
@@ -45,12 +50,12 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 		log.info("前端请求参数：" + JSON.toJSONString(entity));
 		EntityResult<T> result = new EntityResult<T>();
 		try {
-			String prefix = prefix(entity.getClass());// 获取code前缀
-			entity.setCode(CodeHelper.getCode(prefix));
+			entity.setCode(CodeHelper.getCode(entity.getClass()));
 			entity.setUid(CodeHelper.getUUID());
 			entity.setCreateTime(new Date());
 			entity.setUpdateUser(entity.getCreateUser());
 			entity.setUpdateTime(entity.getCreateTime());
+			completionFieldValue(entity);
 			log.info("完整请求参数：" + JSON.toJSONString(entity));
 			T t = repository.saveAndFlush(entity);
 			result.setEntity(t);
@@ -294,25 +299,92 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 		}
 	}
 
-	private static String prefix(Class<?> clazz) {
-		String className = clazz.getSimpleName();
-		char[] chars = className.toCharArray();
-		StringBuffer name = new StringBuffer();
-		for (char c : chars) {
-			if (Character.isUpperCase(c)) {
-				name.append(c);
-			}
-		}
-		return name.toString();
-	}
-
-	public static void main(String[] args) {
-		BaseEntity entity = new BaseEntity();
-		entity.setCode("123456");
-		entity.setCreateTime(new Date());
+	@SuppressWarnings("rawtypes")
+	private void completionFieldValue(T entity) {
+		Field[] fields = entity.getClass().getDeclaredFields();
 		try {
-			System.out.println(ObjectUtil.getFiledsInfo(entity));
-			;
+			for (Field f : fields) {
+				if (StringUtils.equalsAny(f.getName(), "serialVersionUID")) {
+					continue;
+				}
+				Object obj = ObjectUtil.getFieldValueByName(f.getName(), entity);
+				if (obj == null) {
+					continue;
+				}
+				// 是否存在一对多的关系
+				boolean flag = f.isAnnotationPresent(OneToMany.class);
+				// 是否存在多对一
+				boolean flag2 = f.isAnnotationPresent(ManyToOne.class);
+				if (flag) {
+					// 是否继承BaseEntity
+					boolean isListExtends = List.class.isAssignableFrom(obj.getClass());
+					if (isListExtends) {
+						List<?> list = (List<?>) obj;
+						for (Object object : list) {
+							boolean isEntityExtends = BaseEntity.class.isAssignableFrom(object.getClass());
+							if (isEntityExtends) {
+								Class superClazz = object.getClass().getSuperclass();
+								Field[] _fields = superClazz.getDeclaredFields();
+								for (Field field : _fields) {
+									if (StringUtils.equals("serialVersionUID", field.getName())) {
+										continue;
+									}
+									Object val = ObjectUtil.getFieldValueByName(field.getName(), superClazz);
+									String name = field.getName();
+									if (StringUtils.equals(field.getName(), "uid")) {
+										if (val == null) {
+											ObjectUtil.setFieldValueByName(name, CodeHelper.getUUID(), object);
+										}
+									} else if (StringUtils.equals(field.getName(), "code")) {
+										if (val == null) {
+											ObjectUtil.setFieldValueByName(name, CodeHelper.getCode(entity.getClass()),
+													object);
+										}
+									} else if (StringUtils.equals(field.getName(), "createUser")
+											|| StringUtils.equals(field.getName(), "updateUser")) {
+										ObjectUtil.setFieldValueByName(name, entity.getCreateUser(), object);
+
+									} else if (StringUtils.equals(field.getName(), "createTime")
+											|| StringUtils.equals(field.getName(), "updateTime")) {
+										ObjectUtil.setFieldValueByName(name, entity.getCreateTime(), object);
+									}
+								}
+							}
+						}
+					} else if (flag2) {
+						boolean isEntityExtends = BaseEntity.class.isAssignableFrom(entity.getClass());
+						if (isEntityExtends) {
+							Object object = ObjectUtil.getFieldValueByName(f.getName(), entity);
+							Class superClazz = object.getClass().getSuperclass();
+							Field[] _fields = superClazz.getDeclaredFields();
+							for (Field field : _fields) {
+								if (StringUtils.equals("serialVersionUID", field.getName())) {
+									continue;
+								}
+								Object val = ObjectUtil.getFieldValueByName(field.getName(), superClazz);
+								String name = field.getName();
+								if (StringUtils.equals(field.getName(), "uid")) {
+									if (val == null) {
+										ObjectUtil.setFieldValueByName(name, CodeHelper.getUUID(), object);
+									}
+								} else if (StringUtils.equals(field.getName(), "code")) {
+									if (val == null) {
+										ObjectUtil.setFieldValueByName(name, CodeHelper.getCode(entity.getClass()),
+												object);
+									}
+								} else if (StringUtils.equals(field.getName(), "createUser")
+										|| StringUtils.equals(field.getName(), "updateUser")) {
+									ObjectUtil.setFieldValueByName(name, entity.getCreateUser(), object);
+
+								} else if (StringUtils.equals(field.getName(), "createTime")
+										|| StringUtils.equals(field.getName(), "updateTime")) {
+									ObjectUtil.setFieldValueByName(name, entity.getCreateTime(), object);
+								}
+							}
+						}
+					}
+				}
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
