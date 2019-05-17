@@ -1,6 +1,8 @@
 package org.zero.spring.jpa;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -301,9 +303,8 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 		}
 	}
 
-	@SuppressWarnings("rawtypes")
 	private void completionFieldValue(T entity, OperationType type) {
-		Field[] fields = entity.getClass().getDeclaredFields();
+		List<Field> fields = getFields(entity.getClass());
 		String user = null;
 		Date time = null;
 		if (type == OperationType.Insert) {
@@ -334,29 +335,27 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 						for (Object object : list) {
 							boolean isEntityExtends = BaseEntity.class.isAssignableFrom(object.getClass());
 							if (isEntityExtends) {
-								Class superClazz = object.getClass().getSuperclass();
-								Field[] _fields = superClazz.getDeclaredFields();
+								List<Field> _fields = getFields(object.getClass());
 								for (Field field : _fields) {
 									if (StringUtils.equals("serialVersionUID", field.getName())) {
 										continue;
 									}
-									Object val = ObjectUtil.getFieldValueByName(field.getName(), superClazz);
+									field.setAccessible(true);
+									Object val = field.get(object);
+									if (val != null) {
+										continue;
+									}
 									String name = field.getName();
-									if (StringUtils.equals(field.getName(), "uid")) {
-										if (val == null) {
-											ObjectUtil.setFieldValueByName(name, CodeHelper.getUUID(), object);
-										}
+									if (StringUtils.equals(name, "uid")) {
+										field.set(object, CodeHelper.getUUID());
 									} else if (StringUtils.equals(field.getName(), "code")) {
-										if (val == null) {
-											ObjectUtil.setFieldValueByName(name, CodeHelper.getCode(entity.getClass()),
-													object);
-										}
+										field.set(object, CodeHelper.getCode(entity.getClass()));
 									} else if (StringUtils.equals(field.getName(), "createUser")
 											|| StringUtils.equals(field.getName(), "updateUser")) {
-										ObjectUtil.setFieldValueByName(name, user, object);
+										field.set(object, user);
 									} else if (StringUtils.equals(field.getName(), "createTime")
 											|| StringUtils.equals(field.getName(), "updateTime")) {
-										ObjectUtil.setFieldValueByName(name, time, object);
+										field.set(object, time);
 									}
 								}
 							}
@@ -365,30 +364,28 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 						boolean isEntityExtends = BaseEntity.class.isAssignableFrom(entity.getClass());
 						if (isEntityExtends) {
 							Object object = ObjectUtil.getFieldValueByName(f.getName(), entity);
-							Class superClazz = object.getClass().getSuperclass();
-							Field[] _fields = superClazz.getDeclaredFields();
+
+							List<Field> _fields = getFields(object.getClass());
 							for (Field field : _fields) {
 								if (StringUtils.equals("serialVersionUID", field.getName())) {
 									continue;
 								}
-								Object val = ObjectUtil.getFieldValueByName(field.getName(), superClazz);
+								field.setAccessible(true);
+								Object val = field.get(object);
+								if (val != null) {
+									continue;
+								}
 								String name = field.getName();
-								if (StringUtils.equals(field.getName(), "uid")) {
-									if (val == null) {
-										ObjectUtil.setFieldValueByName(name, CodeHelper.getUUID(), object);
-									}
+								if (StringUtils.equals(name, "uid")) {
+									field.set(object, CodeHelper.getUUID());
 								} else if (StringUtils.equals(field.getName(), "code")) {
-									if (val == null) {
-										ObjectUtil.setFieldValueByName(name, CodeHelper.getCode(entity.getClass()),
-												object);
-									}
+									field.set(object, CodeHelper.getCode(entity.getClass()));
 								} else if (StringUtils.equals(field.getName(), "createUser")
 										|| StringUtils.equals(field.getName(), "updateUser")) {
-									ObjectUtil.setFieldValueByName(name, entity.getCreateUser(), object);
-
+									field.set(object, user);
 								} else if (StringUtils.equals(field.getName(), "createTime")
 										|| StringUtils.equals(field.getName(), "updateTime")) {
-									ObjectUtil.setFieldValueByName(name, entity.getCreateTime(), object);
+									field.set(object, time);
 								}
 							}
 						}
@@ -398,5 +395,14 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	private List<Field> getFields(Class<?> clazz) {
+		List<Field> list = new ArrayList<Field>();
+		while (clazz != null) {
+			list.addAll(new ArrayList<>(Arrays.asList(clazz.getDeclaredFields())));
+			clazz = clazz.getSuperclass();
+		}
+		return list;
 	}
 }
