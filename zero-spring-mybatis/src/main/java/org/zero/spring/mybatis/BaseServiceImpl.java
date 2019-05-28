@@ -1,5 +1,6 @@
 package org.zero.spring.mybatis;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -12,7 +13,6 @@ import com.github.pagehelper.ISelect;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 
-import zero.commons.basics.DateUtil;
 import zero.commons.basics.StringUtils;
 import zero.commons.basics.result.BaseResult;
 import zero.commons.basics.result.DataResult;
@@ -31,8 +31,8 @@ import zero.commons.basics.result.ResultType;
  * @param <PK>
  * @param <M>
  */
-public class BaseServiceImpl<T extends BaseEntity, M extends IBaseMapper<T, DTO>, DTO extends BaseDto>
-		implements IBaseService<T, DTO> {
+public class BaseServiceImpl<T extends BaseEntity, M extends BaseMapper<T, DTO>, DTO extends BaseDto>
+		implements BaseService<T, DTO> {
 
 	private static Logger logger = LoggerFactory.getLogger(BaseServiceImpl.class);
 
@@ -45,7 +45,7 @@ public class BaseServiceImpl<T extends BaseEntity, M extends IBaseMapper<T, DTO>
 	 * 
 	 * @param entity
 	 * @return
-	 * @see org.spring.commons.base.IBaseService#insert(org.spring.commons.base.BaseModel)
+	 * @see org.spring.commons.base.BaseService#insert(org.spring.commons.base.BaseModel)
 	 */
 	@Override
 	public BaseResult insert(T entity) {
@@ -63,8 +63,8 @@ public class BaseServiceImpl<T extends BaseEntity, M extends IBaseMapper<T, DTO>
 			if (entity.getUid() == null || "".equals(entity.getUid())) {
 				entity.setUid(UUID.randomUUID().toString().replace("-", ""));
 			}
-			if (entity.getCreateTime() == null || "".equals(entity.getCreateTime())) {
-				entity.setCreateTime(DateUtil.curSystemTime());
+			if (entity.getCreateTime() == null) {
+				entity.setCreateTime(new Date());
 			}
 			entity.setUpdateUser(entity.getCreateUser());
 			entity.setUpdateTime(entity.getCreateTime());
@@ -89,7 +89,7 @@ public class BaseServiceImpl<T extends BaseEntity, M extends IBaseMapper<T, DTO>
 	 * @param entity
 	 * @param dto
 	 * @return
-	 * @see org.spring.commons.base.IBaseService#insert(org.spring.commons.base.BaseModel,
+	 * @see org.spring.commons.base.BaseService#insert(org.spring.commons.base.BaseModel,
 	 *      org.zero.spring.mybatis.spring.commons.base.BaseDto)
 	 */
 	@Override
@@ -113,8 +113,8 @@ public class BaseServiceImpl<T extends BaseEntity, M extends IBaseMapper<T, DTO>
 			if (entity.getUid() == null || "".equals(entity.getUid())) {
 				entity.setUid(UUID.randomUUID().toString().replace("-", ""));
 			}
-			if (entity.getCreateTime() == null || "".equals(entity.getCreateTime())) {
-				entity.setCreateTime(DateUtil.curSystemTime());
+			if (entity.getCreateTime() == null) {
+				entity.setCreateTime(new Date());
 			}
 			entity.setUpdateUser(entity.getCreateUser());
 			entity.setUpdateTime(entity.getCreateTime());
@@ -138,7 +138,7 @@ public class BaseServiceImpl<T extends BaseEntity, M extends IBaseMapper<T, DTO>
 	 * 
 	 * @param entity
 	 * @return
-	 * @see org.spring.commons.base.IBaseService#update(org.spring.commons.base.BaseModel)
+	 * @see org.spring.commons.base.BaseService#update(org.spring.commons.base.BaseModel)
 	 */
 	@Override
 	public BaseResult update(T entity) {
@@ -157,7 +157,7 @@ public class BaseServiceImpl<T extends BaseEntity, M extends IBaseMapper<T, DTO>
 				return result;
 			}
 			if (StringUtils.isBlank(entity.getUpdateTime())) {
-				entity.setUpdateTime(DateUtil.curSystemTime());
+				entity.setUpdateTime(new Date());
 			}
 			mapper.update(entity);
 			result.setCode(ResultType.SUCCESS);
@@ -180,7 +180,7 @@ public class BaseServiceImpl<T extends BaseEntity, M extends IBaseMapper<T, DTO>
 	 * @param entity
 	 * @param dto
 	 * @return
-	 * @see org.commons.base.IBaseService#update(org.commons.base.BaseModel,
+	 * @see org.commons.base.BaseService#update(org.commons.base.BaseModel,
 	 *      org.zero.spring.mybatis.base.BaseDto)
 	 */
 	@Override
@@ -200,7 +200,7 @@ public class BaseServiceImpl<T extends BaseEntity, M extends IBaseMapper<T, DTO>
 				return result;
 			}
 			if (StringUtils.isBlank(entity.getUpdateTime())) {
-				entity.setUpdateTime(DateUtil.curSystemTime());
+				entity.setUpdateTime(new Date());
 			}
 			mapper.update(entity);
 			result.setCode(ResultType.SUCCESS);
@@ -223,7 +223,7 @@ public class BaseServiceImpl<T extends BaseEntity, M extends IBaseMapper<T, DTO>
 	 * @param entity
 	 * @param map
 	 * @return
-	 * @see org.zero.spring.mybatis.IBaseService#update(org.zero.spring.mybatis.BaseEntity,
+	 * @see org.zero.spring.mybatis.BaseService#update(org.zero.spring.mybatis.BaseEntity,
 	 *      java.util.Map)
 	 */
 	@Override
@@ -243,7 +243,7 @@ public class BaseServiceImpl<T extends BaseEntity, M extends IBaseMapper<T, DTO>
 				return result;
 			}
 			if (StringUtils.isBlank(entity.getUpdateTime())) {
-				entity.setUpdateTime(DateUtil.curSystemTime());
+				entity.setUpdateTime(new Date());
 			}
 			mapper.update(entity);
 			result.setCode(ResultType.SUCCESS);
@@ -265,7 +265,7 @@ public class BaseServiceImpl<T extends BaseEntity, M extends IBaseMapper<T, DTO>
 	 * 
 	 * @param code
 	 * @return
-	 * @see org.spring.commons.base.IBaseService#delete(java.lang.String)
+	 * @see org.spring.commons.base.BaseService#delete(java.lang.String)
 	 */
 	@Override
 	public BaseResult delete(String code) {
@@ -303,7 +303,7 @@ public class BaseServiceImpl<T extends BaseEntity, M extends IBaseMapper<T, DTO>
 	 * 
 	 * @param dto
 	 * @return
-	 * @see org.spring.commons.base.IBaseService#delete(org.zero.spring.mybatis.spring.commons.base.BaseDto)
+	 * @see org.spring.commons.base.BaseService#delete(org.zero.spring.mybatis.spring.commons.base.BaseDto)
 	 */
 	@Override
 	public BaseResult delete(DTO dto) {
@@ -341,7 +341,7 @@ public class BaseServiceImpl<T extends BaseEntity, M extends IBaseMapper<T, DTO>
 	 * 
 	 * @param map
 	 * @return
-	 * @see org.spring.commons.base.IBaseService#delete(java.util.Map)
+	 * @see org.spring.commons.base.BaseService#delete(java.util.Map)
 	 */
 	@Override
 	public BaseResult delete(Map<String, Object> map) {
@@ -376,7 +376,7 @@ public class BaseServiceImpl<T extends BaseEntity, M extends IBaseMapper<T, DTO>
 	 * 
 	 * @param code
 	 * @return
-	 * @see org.spring.commons.base.IBaseService#select(java.lang.String)
+	 * @see org.spring.commons.base.BaseService#select(java.lang.String)
 	 */
 	@Override
 	public EntityResult<T> select(String code) {
@@ -414,7 +414,7 @@ public class BaseServiceImpl<T extends BaseEntity, M extends IBaseMapper<T, DTO>
 	 * 
 	 * @param dto
 	 * @return
-	 * @see org.spring.commons.base.IBaseService#select(org.zero.spring.mybatis.spring.commons.base.BaseDto)
+	 * @see org.spring.commons.base.BaseService#select(org.zero.spring.mybatis.spring.commons.base.BaseDto)
 	 */
 	@Override
 	public EntityResult<T> select(DTO dto) {
@@ -452,7 +452,7 @@ public class BaseServiceImpl<T extends BaseEntity, M extends IBaseMapper<T, DTO>
 	 * 
 	 * @param map
 	 * @return
-	 * @see org.spring.commons.base.IBaseService#select(java.util.Map)
+	 * @see org.spring.commons.base.BaseService#select(java.util.Map)
 	 */
 	@Override
 	public EntityResult<T> select(Map<String, Object> map) {
@@ -490,7 +490,7 @@ public class BaseServiceImpl<T extends BaseEntity, M extends IBaseMapper<T, DTO>
 	 * 
 	 * @param dto
 	 * @return
-	 * @see org.spring.commons.base.IBaseService#selectAll(org.zero.spring.mybatis.spring.commons.base.BaseDto)
+	 * @see org.spring.commons.base.BaseService#selectAll(org.zero.spring.mybatis.spring.commons.base.BaseDto)
 	 */
 	@Override
 	public DataResult<T> selectAll(DTO dto) {
@@ -523,7 +523,7 @@ public class BaseServiceImpl<T extends BaseEntity, M extends IBaseMapper<T, DTO>
 	 * 
 	 * @param map
 	 * @return
-	 * @see org.spring.commons.base.IBaseService#selectAll(java.util.Map)
+	 * @see org.spring.commons.base.BaseService#selectAll(java.util.Map)
 	 */
 	@Override
 	public DataResult<T> selectAll(Map<String, Object> map) {
@@ -561,7 +561,7 @@ public class BaseServiceImpl<T extends BaseEntity, M extends IBaseMapper<T, DTO>
 	 * 
 	 * @param dto
 	 * @return
-	 * @see org.spring.commons.base.IBaseService#page(org.zero.spring.mybatis.spring.commons.base.BaseDto)
+	 * @see org.spring.commons.base.BaseService#page(org.zero.spring.mybatis.spring.commons.base.BaseDto)
 	 */
 	@Override
 	public PageResult<T> page(DTO dto) {
@@ -619,7 +619,7 @@ public class BaseServiceImpl<T extends BaseEntity, M extends IBaseMapper<T, DTO>
 	 * 
 	 * @param map
 	 * @return
-	 * @see org.spring.commons.base.IBaseService#page(java.util.Map)
+	 * @see org.spring.commons.base.BaseService#page(java.util.Map)
 	 */
 	@Override
 	public PageResult<T> page(Map<String, Object> map) {

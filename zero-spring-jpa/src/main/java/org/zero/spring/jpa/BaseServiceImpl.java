@@ -47,17 +47,12 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 	 * @return
 	 * @see org.zero.spring.jpa.IBaseService#insert(org.zero.spring.jpa.BaseEntity)
 	 */
-	@Transactional
 	@Override
+	@Transactional
 	public EntityResult<T> create(T entity) {
 		log.info("前端请求参数：" + JSON.toJSONString(entity));
 		EntityResult<T> result = new EntityResult<T>();
 		try {
-			entity.setCode(CodeHelper.getCode(entity.getClass()));
-			entity.setUid(CodeHelper.getUUID());
-			entity.setCreateTime(new Date());
-			entity.setUpdateUser(entity.getCreateUser());
-			entity.setUpdateTime(entity.getCreateTime());
 			completionFieldValue(entity, OperationType.Insert);
 			log.info("完整请求参数：" + JSON.toJSONString(entity));
 			T t = repository.saveAndFlush(entity);
@@ -82,13 +77,18 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 	 * @see org.zero.spring.jpa.IBaseService#update(org.zero.spring.jpa.BaseEntity)
 	 */
 	@Override
+	@Transactional
 	public EntityResult<T> update(T entity, ID id) {
 		log.info("请求参数：" + JSON.toJSONString(entity));
 		EntityResult<T> result = new EntityResult<T>();
 		try {
+			if (id == null || StringUtils.isBlank(id.toString())) {
+				result.setCode(ResultType.ERROR);
+				result.setMessage("主键编码为空");
+				return result;
+			}
 			T selEntity = repository.findById(id).get();
 			if (selEntity != null) {
-				entity.setUpdateTime(new Date());
 				completionFieldValue(entity, OperationType.Update);
 				T t = repository.save(entity);
 				repository.flush();
@@ -117,6 +117,7 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 	 * @see org.zero.spring.jpa.IBaseService#select(org.zero.spring.jpa.BaseEntity)
 	 */
 	@Override
+	@Transactional(readOnly = true)
 	public EntityResult<T> select(T entity) {
 		log.info("请求参数：" + JSON.toJSONString(entity));
 		EntityResult<T> result = new EntityResult<T>();
@@ -154,6 +155,7 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 	 * @see org.zero.spring.jpa.IBaseService#select(java.lang.Object)
 	 */
 	@Override
+	@Transactional(readOnly = true)
 	public EntityResult<T> select(ID id) {
 		EntityResult<T> result = new EntityResult<T>();
 		try {
@@ -184,6 +186,7 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 	 * @see org.zero.spring.jpa.IBaseService#delete(org.zero.spring.jpa.BaseEntity)
 	 */
 	@Override
+	@Transactional
 	public BaseResult delete(T entity) {
 		log.info("请求参数：" + JSON.toJSONString(entity));
 		EntityResult<T> result = new EntityResult<T>();
@@ -216,6 +219,7 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 	 * @see org.zero.spring.jpa.IBaseService#delete(java.lang.Object)
 	 */
 	@Override
+	@Transactional
 	public BaseResult delete(ID id) {
 		EntityResult<T> result = new EntityResult<T>();
 		try {
@@ -246,6 +250,7 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 	 * @see org.zero.spring.jpa.IBaseService#selectAll(org.zero.spring.jpa.BaseEntity)
 	 */
 	@Override
+	@Transactional(readOnly = true)
 	public DataResult<T> selectAll(T entity) {
 		DataResult<T> result = new DataResult<T>();
 		try {
@@ -276,6 +281,7 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public PageResult<T> page(T entity) {
 		log.info("请求参数：" + JSON.toJSONString(entity));
 		PageResult<T> result = new PageResult<T>();
@@ -283,15 +289,15 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 			T _obj = (T) ObjectUtil.newObject(entity);
 			ExampleMatcher matcher = JpaUtil.getMatcher(_obj);
 			Pageable request = PageRequest.of(entity.getPage() - 1, entity.getSize());
-			Page<T> page = repository.findAll(Example.of(_obj, matcher), request);
-			if (page == null) {
+			Page<T> _page = repository.findAll(Example.of(_obj, matcher), request);
+			if (_page == null) {
 				result.setCode(ResultType.NULL);
 				result.setMessage("查询分页数据为空");
 				return result;
 			}
 			result.setCode(ResultType.SUCCESS);
-			result.setData(page.getContent());
-			result.setTotal(page.getTotalElements());
+			result.setData(_page.getContent());
+			result.setTotal(_page.getTotalElements());
 			result.setMessage("查询分页数据成功");
 			return result;
 		} catch (Exception e) {
@@ -308,11 +314,28 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 		String user = null;
 		Date time = null;
 		if (type == OperationType.Insert) {
-			user = entity.getCreateUser();
-			time = entity.getCreateTime();
+			if (ObjectUtil.isExistsFiled("createUser", entity)) {
+				user = (String) ObjectUtil.getFieldValueByName("createUser", entity);
+			}
+			if (ObjectUtil.isExistsFiled("createTime", entity)) {
+				if (ObjectUtil.getFieldValueByName("createTime", entity) != null) {
+					time = (Date) ObjectUtil.getFieldValueByName("createTime", entity);
+				} else {
+					time = new Date();
+				}
+			}
 		} else if (type == OperationType.Update) {
-			user = entity.getUpdateUser();
-			time = entity.getUpdateTime();
+			if (ObjectUtil.isExistsFiled("updateUser", entity)) {
+				user = (String) ObjectUtil.getFieldValueByName("updateUser", entity);
+			}
+			if (ObjectUtil.isExistsFiled("updateTime", entity)) {
+				if (ObjectUtil.getFieldValueByName("updateTime", entity) != null) {
+					time = (Date) ObjectUtil.getFieldValueByName("updateTime", entity);
+				} else {
+					time = new Date();
+				}
+
+			}
 		}
 		try {
 			for (Field f : fields) {
@@ -320,6 +343,28 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 					continue;
 				}
 				Object obj = ObjectUtil.getFieldValueByName(f.getName(), entity);
+				if (type == OperationType.Insert) {
+					String name = f.getName();
+					if (StringUtils.equals(name, "uid")) {
+						f.setAccessible(true);
+						f.set(entity, CodeHelper.getUUID());
+					} else if (StringUtils.equals(f.getName(), "code")) {
+						f.setAccessible(true);
+						f.set(entity, CodeHelper.getCode(entity.getClass()));
+					} else if (StringUtils.equals(f.getName(), "updateUser")) {
+						f.setAccessible(true);
+						f.set(entity, user);
+					} else if (StringUtils.equals(f.getName(), "createTime")
+							|| StringUtils.equals(f.getName(), "updateTime")) {
+						f.setAccessible(true);
+						f.set(entity, time);
+					}
+				} else if (type == OperationType.Update) {
+					if (StringUtils.equals(f.getName(), "updateTime")) {
+						f.setAccessible(true);
+						f.set(entity, time);
+					}
+				}
 				if (obj == null) {
 					continue;
 				}

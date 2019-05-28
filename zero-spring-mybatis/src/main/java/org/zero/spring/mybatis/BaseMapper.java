@@ -12,7 +12,7 @@ import java.util.Map;
  * 
  * @param <T>
  */
-public interface IBaseMapper<T extends BaseEntity, DTO extends BaseDto> {
+public interface BaseMapper<T extends BaseEntity, DTO extends BaseDto> {
 
 	/**
 	 * 

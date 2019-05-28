@@ -9,12 +9,12 @@ import zero.commons.basics.result.PageResult;
 
 /**
  * 
- * 类: IBaseService <br>
+ * 类: BaseService <br>
  * 描述: 业务逻辑处理接口基类 <br>
  * 作者: zhy<br>
  * 时间: 2016年7月27日 上午9:41:19
  */
-public interface IBaseService<T extends BaseEntity, DTO extends BaseDto> {
+public interface BaseService<T extends BaseEntity, DTO extends BaseDto> {
 
 	/**
 	 * 

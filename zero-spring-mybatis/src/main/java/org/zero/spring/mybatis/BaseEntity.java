@@ -1,79 +1,45 @@
 package org.zero.spring.mybatis;
 
 import java.io.Serializable;
+import java.util.Date;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class BaseEntity implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	private Long id;
-
+	/**
+	 * uid
+	 */
 	private String uid;
 
+	/**
+	 * 编码
+	 */
 	private String code;
 
+	/**
+	 * 创建人
+	 */
 	private String createUser;
 
-	private String createTime;
+	/**
+	 * 创建时间
+	 */
+	private Date createTime;
 
+	/**
+	 * 修改人
+	 */
 	private String updateUser;
 
-	private String updateTime;
-
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
-
-	public String getUid() {
-		return uid;
-	}
-
-	public void setUid(String uid) {
-		this.uid = uid;
-	}
-
-	public String getCode() {
-		return code;
-	}
-
-	public void setCode(String code) {
-		this.code = code;
-	}
-
-	public String getCreateUser() {
-		return createUser;
-	}
-
-	public void setCreateUser(String createUser) {
-		this.createUser = createUser;
-	}
-
-	public String getCreateTime() {
-		return createTime;
-	}
-
-	public void setCreateTime(String createTime) {
-		this.createTime = createTime;
-	}
-
-	public String getUpdateUser() {
-		return updateUser;
-	}
-
-	public void setUpdateUser(String updateUser) {
-		this.updateUser = updateUser;
-	}
-
-	public String getUpdateTime() {
-		return updateTime;
-	}
-
-	public void setUpdateTime(String updateTime) {
-		this.updateTime = updateTime;
-	}
+	/**
+	 * 修改时间
+	 */
+	private Date updateTime;
 
 }

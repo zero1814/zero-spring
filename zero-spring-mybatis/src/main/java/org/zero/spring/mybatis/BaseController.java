@@ -12,7 +12,7 @@ import zero.commons.basics.result.BaseResult;
 import zero.commons.basics.result.EntityResult;
 import zero.commons.basics.result.PageResult;
 
-public class BaseController<T extends BaseEntity, D extends BaseDto, S extends IBaseService<T, D>> {
+public class BaseController<T extends BaseEntity, D extends BaseDto, S extends BaseService<T, D>> {
 
 	protected String nullUrl;
 
@@ -23,19 +23,11 @@ public class BaseController<T extends BaseEntity, D extends BaseDto, S extends I
 
 	@PostMapping(value = "insert", consumes = "application/json")
 	public BaseResult insert(@RequestBody T entity, HttpSession session) {
-		if (session.getAttribute("user") != null) {
-			BaseEntity user = (BaseEntity) session.getAttribute("user");
-			entity.setCreateUser(user.getCode());
-		}
 		return service.insert(entity);
 	}
 
 	@PostMapping(value = "update", consumes = "application/json")
 	public BaseResult update(@RequestBody T entity, HttpSession session) {
-		if (session.getAttribute("user") != null) {
-			BaseEntity user = (BaseEntity) session.getAttribute("user");
-			entity.setUpdateUser(user.getCode());
-		}
 		return service.update(entity);
 	}
 

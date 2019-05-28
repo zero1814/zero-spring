@@ -1,13 +1,10 @@
 package org.zero.spring.jpa;
 
 import java.io.Serializable;
-import java.util.Date;
 
 import javax.persistence.Column;
-import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.Transient;
-
 
 import lombok.Getter;
 import lombok.Setter;
@@ -28,22 +25,6 @@ public class BaseEntity implements Serializable {
 
 	@Column(name = "uid", length = 50, unique = true, updatable = false)
 	private String uid;
-
-	@Id
-	@Column(name = "code", length = 50)
-	private String code;
-
-	@Column(name = "create_user", length = 50, insertable = true, updatable = false, nullable = false)
-	private String createUser;
-
-	@Column(name = "create_time", insertable = true, updatable = false, nullable = false)
-	private Date createTime;
-
-	@Column(name = "update_user", length = 50, insertable = true, updatable = true, nullable = false)
-	private String updateUser;
-
-	@Column(name = "update_time", insertable = true, updatable = true, nullable = false)
-	private Date updateTime;
 
 	/**
 	 * 当前页
