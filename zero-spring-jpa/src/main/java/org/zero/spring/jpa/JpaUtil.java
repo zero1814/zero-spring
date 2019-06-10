@@ -1,7 +1,10 @@
 package org.zero.spring.jpa;
 
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
+
+import javax.persistence.Column;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.ExampleMatcher;
@@ -33,5 +36,23 @@ public class JpaUtil<T> {
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	public boolean validate(T entity) {
+		List<Field> list = ObjectUtil.getFields(entity.getClass());
+		try {
+			if (list.isEmpty()) {
+				return false;
+			}
+			for (Field field : list) {
+				Column col = field.getDeclaredAnnotation(Column.class);
+				if (col.unique()) {
+					
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return true;
 	}
 }

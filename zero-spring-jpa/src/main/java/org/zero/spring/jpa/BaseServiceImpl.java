@@ -324,6 +324,14 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 					time = new Date();
 				}
 			}
+			if (ObjectUtil.isExistsFiled("updateTime", entity)) {
+				if (ObjectUtil.getFieldValueByName("updateTime", entity) != null) {
+					time = (Date) ObjectUtil.getFieldValueByName("updateTime", entity);
+				} else {
+					time = new Date();
+				}
+
+			}
 		} else if (type == OperationType.Update) {
 			if (ObjectUtil.isExistsFiled("updateUser", entity)) {
 				user = (String) ObjectUtil.getFieldValueByName("updateUser", entity);

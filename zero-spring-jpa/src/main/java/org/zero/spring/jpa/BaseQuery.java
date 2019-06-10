@@ -3,6 +3,10 @@ package org.zero.spring.jpa;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.EntityManager;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
@@ -23,4 +27,5 @@ public class BaseQuery<T extends BaseEntity, D, R extends BaseRepository<T, Stri
 		List<T> list = repository.findAll(example);
 		return list;
 	}
+
 }
