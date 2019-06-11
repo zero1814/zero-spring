@@ -289,7 +289,7 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 			T _obj = (T) ObjectUtil.newObject(entity);
 			ExampleMatcher matcher = JpaUtil.getMatcher(_obj);
 			Pageable request = PageRequest.of(entity.getPage() - 1, entity.getSize());
-			Page<T> _page = repository.findAll(Example.of(entity, matcher), request);
+			Page<T> _page = repository.findAll(Example.of(_obj, matcher), request);
 			if (_page == null) {
 				result.setCode(ResultType.NULL);
 				result.setMessage("查询分页数据为空");
