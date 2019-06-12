@@ -287,6 +287,7 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 		PageResult<T> result = new PageResult<T>();
 		try {
 			T _obj = (T) ObjectUtil.newObject(entity);
+			System.out.println("整合后查询条件\n" + JSON.toJSONString(_obj));
 			ExampleMatcher matcher = JpaUtil.getMatcher(_obj);
 			Pageable request = PageRequest.of(entity.getPage() - 1, entity.getSize());
 			Page<T> _page = repository.findAll(Example.of(_obj, matcher), request);
