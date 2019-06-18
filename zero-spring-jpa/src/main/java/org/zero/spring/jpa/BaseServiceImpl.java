@@ -89,7 +89,7 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 			}
 			T selEntity = repository.findById(id).get();
 			if (selEntity != null) {
-				completionFieldValue(entity, OperationType.Update);
+				// completionFieldValue(entity, OperationType.Update);
 				T t = repository.save(entity);
 				repository.flush();
 				result.setEntity(t);
@@ -310,11 +310,13 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 		}
 	}
 
-	private void completionFieldValue(T entity, OperationType type) {
+	protected void completionFieldValue(Object entity, OperationType type) {
+		// 获取所有属性
 		List<Field> fields = getFields(entity.getClass());
 		String user = null;
 		Date time = null;
 		if (type == OperationType.Insert) {
+			// 添加操作，取值
 			if (ObjectUtil.isExistsFiled("createUser", entity)) {
 				user = (String) ObjectUtil.getFieldValueByName("createUser", entity);
 			}
@@ -334,6 +336,7 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 
 			}
 		} else if (type == OperationType.Update) {
+			// 修改操作取值
 			if (ObjectUtil.isExistsFiled("updateUser", entity)) {
 				user = (String) ObjectUtil.getFieldValueByName("updateUser", entity);
 			}
@@ -347,101 +350,61 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 			}
 		}
 		try {
-			for (Field f : fields) {
-				if (StringUtils.equalsAny(f.getName(), "serialVersionUID")) {
-					continue;
-				}
-				Object obj = ObjectUtil.getFieldValueByName(f.getName(), entity);
-				if (type == OperationType.Insert) {
-					String name = f.getName();
-					if (StringUtils.equals(name, "uid")) {
-						f.setAccessible(true);
-						f.set(entity, CodeHelper.getUUID());
-					} else if (StringUtils.equals(f.getName(), "code")) {
-						f.setAccessible(true);
-						f.set(entity, CodeHelper.getCode(entity.getClass()));
-					} else if (StringUtils.equals(f.getName(), "updateUser")) {
-						f.setAccessible(true);
-						f.set(entity, user);
-					} else if (StringUtils.equals(f.getName(), "createTime")
-							|| StringUtils.equals(f.getName(), "updateTime")) {
-						f.setAccessible(true);
-						f.set(entity, time);
+			if (fields != null && !fields.isEmpty()) {
+				// 属性循环
+				for (Field f : fields) {
+					if (StringUtils.equalsAny(f.getName(), "serialVersionUID")) {
+						continue;
 					}
-				} else if (type == OperationType.Update) {
-					if (StringUtils.equals(f.getName(), "updateTime")) {
-						f.setAccessible(true);
-						f.set(entity, time);
+					Object obj = ObjectUtil.getFieldValueByName(f.getName(), entity);
+					// 属性赋值
+					if (type == OperationType.Insert) {
+						// 添加操作，默认赋值 uid,code,createUser,creatTime,updateUser =creatUser,updateTime =
+						// createTime
+						String name = f.getName();
+						if (StringUtils.equals(name, "uid")) {
+							f.setAccessible(true);
+							f.set(entity, CodeHelper.getUUID());
+						} else if (obj == null && StringUtils.equals(f.getName(), "code")) {
+							f.setAccessible(true);
+							f.set(entity, CodeHelper.getCode(entity.getClass()));
+						} else if (StringUtils.equals(f.getName(), "updateUser")) {
+							f.setAccessible(true);
+							f.set(entity, user);
+						} else if (StringUtils.equals(f.getName(), "createTime")
+								|| StringUtils.equals(f.getName(), "updateTime")) {
+							f.setAccessible(true);
+							f.set(entity, time);
+						}
+					} else if (type == OperationType.Update) {
+						// 修改操作赋值 updateUser,updateTime
+						if (StringUtils.equals(f.getName(), "updateTime")) {
+							f.setAccessible(true);
+							f.set(entity, time);
+						}
 					}
-				}
-				if (obj == null) {
-					continue;
-				}
-				// 是否存在一对多的关系
-				boolean flag = f.isAnnotationPresent(OneToMany.class);
-				// 是否存在多对一
-				boolean flag2 = f.isAnnotationPresent(ManyToOne.class);
-				if (flag) {
-					// 是否继承BaseEntity
-					boolean isListExtends = List.class.isAssignableFrom(obj.getClass());
-					if (isListExtends) {
-						List<?> list = (List<?>) obj;
-						for (Object object : list) {
-							boolean isEntityExtends = BaseEntity.class.isAssignableFrom(object.getClass());
-							if (isEntityExtends) {
-								List<Field> _fields = getFields(object.getClass());
-								for (Field field : _fields) {
-									if (StringUtils.equals("serialVersionUID", field.getName())) {
-										continue;
-									}
-									field.setAccessible(true);
-									Object val = field.get(object);
-									if (val != null) {
-										continue;
-									}
-									String name = field.getName();
-									if (StringUtils.equals(name, "uid")) {
-										field.set(object, CodeHelper.getUUID());
-									} else if (StringUtils.equals(field.getName(), "code")) {
-										field.set(object, CodeHelper.getCode(entity.getClass()));
-									} else if (StringUtils.equals(field.getName(), "createUser")
-											|| StringUtils.equals(field.getName(), "updateUser")) {
-										field.set(object, user);
-									} else if (StringUtils.equals(field.getName(), "createTime")
-											|| StringUtils.equals(field.getName(), "updateTime")) {
-										field.set(object, time);
-									}
-								}
+					// 是否存在一对多的关系
+					if (obj == null) {
+						continue;
+					}
+					boolean flag = f.isAnnotationPresent(OneToMany.class);
+					if (flag) {
+						// 属性是否时集合
+						boolean isListExtends = List.class.isAssignableFrom(obj.getClass());
+						if (isListExtends) {
+							List<?> list = (List<?>) obj;
+							for (Object object : list) {
+								completionFieldValue(object, type);
 							}
 						}
-					} else if (flag2) {
+					}
+					// 是否存在多对一
+					boolean flag2 = f.isAnnotationPresent(ManyToOne.class);
+					if (flag2) {
 						boolean isEntityExtends = BaseEntity.class.isAssignableFrom(entity.getClass());
 						if (isEntityExtends) {
 							Object object = ObjectUtil.getFieldValueByName(f.getName(), entity);
-
-							List<Field> _fields = getFields(object.getClass());
-							for (Field field : _fields) {
-								if (StringUtils.equals("serialVersionUID", field.getName())) {
-									continue;
-								}
-								field.setAccessible(true);
-								Object val = field.get(object);
-								if (val != null) {
-									continue;
-								}
-								String name = field.getName();
-								if (StringUtils.equals(name, "uid")) {
-									field.set(object, CodeHelper.getUUID());
-								} else if (StringUtils.equals(field.getName(), "code")) {
-									field.set(object, CodeHelper.getCode(entity.getClass()));
-								} else if (StringUtils.equals(field.getName(), "createUser")
-										|| StringUtils.equals(field.getName(), "updateUser")) {
-									field.set(object, user);
-								} else if (StringUtils.equals(field.getName(), "createTime")
-										|| StringUtils.equals(field.getName(), "updateTime")) {
-									field.set(object, time);
-								}
-							}
+							completionFieldValue(object, type);
 						}
 					}
 				}
