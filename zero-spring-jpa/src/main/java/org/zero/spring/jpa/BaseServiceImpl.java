@@ -330,7 +330,7 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 						if (StringUtils.equals(name, "uid")) {
 							f.setAccessible(true);
 							f.set(entity, CodeHelper.getUUID());
-						} else if (obj == null && StringUtils.equals(f.getName(), "code")) {
+						} else if (StringUtils.equals(f.getName(), "code")) {
 							f.setAccessible(true);
 							f.set(entity, CodeHelper.getCode(entity.getClass()));
 						} else if (StringUtils.equals(f.getName(), "updateUser")) {
