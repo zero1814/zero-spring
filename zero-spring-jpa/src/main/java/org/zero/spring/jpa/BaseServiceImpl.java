@@ -54,7 +54,7 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 	 */
 	@Override
 	@Transactional
-	public EntityResult<T> save(T entity) {
+	public EntityResult<T> create(T entity) {
 		log.info("前端请求参数：" + JSON.toJSONString(entity));
 		EntityResult<T> result = new EntityResult<T>();
 		try {
@@ -69,6 +69,34 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 			log.error(e.getMessage(), BaseServiceImpl.class);
 			result.setCode(ResultType.ERROR);
 			result.setMessage("执行添加方法报，错误原因：\n" + e.getMessage());
+			return result;
+		}
+	}
+
+	/**
+	 * 
+	 * 方法: update <br>
+	 * 
+	 * @param entity
+	 * @return
+	 * @see org.zero.spring.jpa.IBaseService#update(org.zero.spring.jpa.BaseEntity)
+	 */
+	@Override
+	public EntityResult<T> update(T entity) {
+		log.info("前端请求参数：" + JSON.toJSONString(entity));
+		EntityResult<T> result = new EntityResult<T>();
+		try {
+			completionFieldValue(entity, OperationType.Update);
+			log.info("完整请求参数：" + JSON.toJSONString(entity));
+			T t = repository.saveAndFlush(entity);
+			result.setEntity(t);
+			result.setCode(ResultType.SUCCESS);
+			result.setMessage("编辑成功");
+			return result;
+		} catch (Exception e) {
+			log.error(e.getMessage(), BaseServiceImpl.class);
+			result.setCode(ResultType.ERROR);
+			result.setMessage("执行编辑方法报，错误原因：\n" + e.getMessage());
 			return result;
 		}
 	}
@@ -388,7 +416,7 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 		return list;
 	}
 
-	protected boolean isExistsEntity(T entity, ID id) {
+	protected boolean isExistsEntityById(T entity) {
 		try {
 			List<Field> list = ObjectUtil.getFields(entity.getClass());
 			String primaryKeyName = "";
@@ -399,8 +427,9 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 					break;
 				}
 			}
+			Object value = ObjectUtil.getFieldValueByName(primaryKeyName, entity);
 			Query query = em.createQuery("SELECT COUNT(1) FROM " + entity.getClass().getName() + " where "
-					+ primaryKeyName + "='" + id + "'");
+					+ primaryKeyName + "='" + value + "'");
 			Object result = query.getSingleResult();
 			if (result != null && Integer.valueOf(result.toString()) > 0) {
 				return true;
@@ -410,4 +439,28 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 		}
 		return false;
 	}
+
+	/**
+	 * 
+	 * 方法: getPrimaryKeyColumnName <br>
+	 * 描述: 获取主键字段名称 <br>
+	 * 作者: zhy<br>
+	 * 时间: 2019年6月21日 下午3:25:03
+	 * 
+	 * @param entity
+	 * @return
+	 */
+	protected String getPrimaryKeyColumnName(T entity) {
+		List<Field> list = ObjectUtil.getFields(entity.getClass());
+		String primaryKeyName = "";
+		for (Field field : list) {
+			boolean isPrimary = field.isAnnotationPresent(Id.class);
+			if (isPrimary) {
+				primaryKeyName = field.getName();
+				break;
+			}
+		}
+		return primaryKeyName;
+	}
+
 }

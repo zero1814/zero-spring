@@ -20,14 +20,14 @@ public class BaseController<T extends BaseEntity, S extends IBaseService<T, Stri
 	@ApiOperation("添加数据")
 	@PostMapping(value = "create", consumes = "application/json")
 	public WebResult create(@RequestBody T entity) {
-		BaseResult result = service.save(entity);
+		BaseResult result = service.create(entity);
 		return WebResult.result(result);
 	}
 
 	@ApiOperation("编辑现有数据")
 	@PostMapping(value = "update", consumes = "application/json")
 	public WebResult update(@RequestBody T entity) {
-		BaseResult result = service.save(entity);
+		BaseResult result = service.update(entity);
 		return WebResult.result(result);
 	}
 
