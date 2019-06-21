@@ -27,19 +27,7 @@ public interface IBaseService<T extends BaseEntity, ID> {
 	 * @param entity
 	 * @return
 	 */
-	EntityResult<T> create(T entity);
-
-	/**
-	 * 
-	 * 方法: update <br>
-	 * 描述: 编辑对象 <br>
-	 * 作者: zhy<br>
-	 * 时间: 2018年12月5日 下午2:42:22
-	 * 
-	 * @param entity
-	 * @return
-	 */
-	EntityResult<T> update(T entity, ID id);
+	EntityResult<T> save(T entity);
 
 	/**
 	 * 

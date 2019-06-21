@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import io.swagger.annotations.ApiOperation;
-import zero.commons.basics.ObjectUtil;
 import zero.commons.basics.result.BaseResult;
 import zero.commons.basics.result.EntityResult;
 import zero.commons.basics.result.PageResult;
@@ -21,15 +20,14 @@ public class BaseController<T extends BaseEntity, S extends IBaseService<T, Stri
 	@ApiOperation("添加数据")
 	@PostMapping(value = "create", consumes = "application/json")
 	public WebResult create(@RequestBody T entity) {
-		BaseResult result = service.create(entity);
+		BaseResult result = service.save(entity);
 		return WebResult.result(result);
 	}
 
 	@ApiOperation("编辑现有数据")
 	@PostMapping(value = "update", consumes = "application/json")
 	public WebResult update(@RequestBody T entity) {
-		String code = (String) ObjectUtil.getFieldValueByName("code", entity);
-		BaseResult result = service.update(entity, code);
+		BaseResult result = service.save(entity);
 		return WebResult.result(result);
 	}
 

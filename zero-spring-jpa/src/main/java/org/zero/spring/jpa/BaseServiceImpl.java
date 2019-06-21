@@ -6,8 +6,11 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.EntityManager;
+import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.Query;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +41,8 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 
 	@Autowired
 	private R repository;
+	@Autowired
+	private EntityManager em;
 
 	/**
 	 * 
@@ -49,7 +54,7 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 	 */
 	@Override
 	@Transactional
-	public EntityResult<T> create(T entity) {
+	public EntityResult<T> save(T entity) {
 		log.info("前端请求参数：" + JSON.toJSONString(entity));
 		EntityResult<T> result = new EntityResult<T>();
 		try {
@@ -64,46 +69,6 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 			log.error(e.getMessage(), BaseServiceImpl.class);
 			result.setCode(ResultType.ERROR);
 			result.setMessage("执行添加方法报，错误原因：\n" + e.getMessage());
-			return result;
-		}
-	}
-
-	/**
-	 * 
-	 * 方法: update <br>
-	 * 
-	 * @param entity
-	 * @return
-	 * @see org.zero.spring.jpa.IBaseService#update(org.zero.spring.jpa.BaseEntity)
-	 */
-	@Override
-	@Transactional
-	public EntityResult<T> update(T entity, ID id) {
-		log.info("请求参数：" + JSON.toJSONString(entity));
-		EntityResult<T> result = new EntityResult<T>();
-		try {
-			if (id == null || StringUtils.isBlank(id.toString())) {
-				result.setCode(ResultType.ERROR);
-				result.setMessage("主键编码为空");
-				return result;
-			}
-			T selEntity = repository.findById(id).get();
-			if (selEntity != null) {
-				// completionFieldValue(entity, OperationType.Update);
-				T t = repository.save(entity);
-				repository.flush();
-				result.setEntity(t);
-				result.setCode(ResultType.SUCCESS);
-				result.setMessage("编辑成功");
-			} else {
-				result.setCode(ResultType.NULL);
-				result.setMessage("查询对象不存在");
-			}
-			return result;
-		} catch (Exception e) {
-			log.error(e.getMessage(), BaseServiceImpl.class);
-			result.setCode(ResultType.ERROR);
-			result.setMessage("执行编辑方法报错，错误原因：\n" + e.getMessage());
 			return result;
 		}
 	}
@@ -421,5 +386,28 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 			clazz = clazz.getSuperclass();
 		}
 		return list;
+	}
+
+	protected boolean isExistsEntity(T entity, ID id) {
+		try {
+			List<Field> list = ObjectUtil.getFields(entity.getClass());
+			String primaryKeyName = "";
+			for (Field field : list) {
+				boolean isPrimary = field.isAnnotationPresent(Id.class);
+				if (isPrimary) {
+					primaryKeyName = field.getName();
+					break;
+				}
+			}
+			Query query = em.createQuery("SELECT COUNT(1) FROM " + entity.getClass().getName() + " where "
+					+ primaryKeyName + "='" + id + "'");
+			Object result = query.getSingleResult();
+			if (result != null && Integer.valueOf(result.toString()) > 0) {
+				return true;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 }
