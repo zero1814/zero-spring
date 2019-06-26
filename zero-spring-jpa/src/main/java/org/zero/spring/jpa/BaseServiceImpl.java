@@ -355,10 +355,10 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 						// 添加操作，默认赋值 uid,code,createUser,creatTime,updateUser =creatUser,updateTime =
 						// createTime
 						String name = f.getName();
-						if (StringUtils.equals(name, "uid")) {
+						if (StringUtils.equals(name, "uid") && obj == null) {
 							f.setAccessible(true);
 							f.set(entity, CodeHelper.getUUID());
-						} else if (StringUtils.equals(f.getName(), "code")) {
+						} else if (StringUtils.equals(f.getName(), "code") && obj == null) {
 							f.setAccessible(true);
 							f.set(entity, CodeHelper.getCode(entity.getClass()));
 						} else if (StringUtils.equals(f.getName(), "updateUser")) {
