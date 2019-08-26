@@ -1,5 +1,5 @@
 package org.zero.spring.elasticsearch;
 
-public class ElasticsearchEntity {
+public class Elasticsearchconfig {
 
 }
