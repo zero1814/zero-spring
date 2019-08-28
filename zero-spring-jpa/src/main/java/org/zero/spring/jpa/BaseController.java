@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import io.swagger.annotations.ApiOperation;
 import zero.commons.basics.result.BaseResult;
+import zero.commons.basics.result.DataResult;
 import zero.commons.basics.result.EntityResult;
 import zero.commons.basics.result.PageResult;
 import zero.commons.basics.result.WebResult;
@@ -50,6 +51,13 @@ public class BaseController<T extends BaseEntity, S extends IBaseService<T, Stri
 	public WebResult page(@RequestBody T entity) {
 		PageResult<T> result = service.page(entity);
 		return WebResult.page(result);
+	}
+
+	@ApiOperation("显示所有数据")
+	@PostMapping(value = "all", consumes = "application/json")
+	public WebResult all(@RequestBody T entity) {
+		DataResult<T> result = service.selectAll(entity);
+		return WebResult.data(result);
 	}
 
 }

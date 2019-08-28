@@ -311,11 +311,11 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 			List<Field> fields = getFields(entity.getClass());
 			completionObject(entity, type, fields);
 			for (Field field : fields) {
-				if (StringUtils.equalsAny(field.getName(), "serialVersionUID")) {
+				if (StringUtils.equals(field.getName(), "serialVersionUID")) {
 					continue;
 				}
 				Object object = ObjectUtil.getFieldValueByName(field.getName(), entity);
-				if(object == null) {
+				if (object == null) {
 					continue;
 				}
 				if (field.isAnnotationPresent(OneToMany.class) || field.isAnnotationPresent(ManyToMany.class)) {
@@ -437,15 +437,14 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 		}
 		// 属性循环
 		for (Field f : fields) {
-			if (StringUtils.equalsAny(f.getName(), "serialVersionUID")) {
+			if (StringUtils.equals(f.getName(), "serialVersionUID")) {
 				continue;
 			}
 			Object obj = ObjectUtil.getFieldValueByName(f.getName(), object);
 			// 属性赋值
+			String name = f.getName();
 			if (type == OperationType.Insert) {
 				// 添加操作，默认赋值 uid,code,createUser,creatTime,updateUser =creatUser,updateTime =
-				// createTime
-				String name = f.getName();
 				if (StringUtils.equals(name, "uid") && obj == null) {
 					f.setAccessible(true);
 					f.set(object, CodeHelper.getUUID());
@@ -461,8 +460,13 @@ public class BaseServiceImpl<T extends BaseEntity, ID, R extends BaseRepository<
 					f.set(object, time);
 				}
 			} else if (type == OperationType.Update) {
-				// 修改操作赋值 updateUser,updateTime
-				if (StringUtils.equals(f.getName(), "updateTime")) {
+				if (StringUtils.equals(name, "uid") && obj == null) {
+					f.setAccessible(true);
+					f.set(object, CodeHelper.getUUID());
+				} else if (StringUtils.equals(f.getName(), "code") && obj == null) {
+					f.setAccessible(true);
+					f.set(object, CodeHelper.getCode(object.getClass()));
+				} else if (StringUtils.equals(f.getName(), "updateTime")) {
 					f.setAccessible(true);
 					f.set(object, time);
 				}
