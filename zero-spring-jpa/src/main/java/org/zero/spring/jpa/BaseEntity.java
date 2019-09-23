@@ -30,12 +30,12 @@ public class BaseEntity implements Serializable {
 	 * 当前页
 	 */
 	@Transient
-	private int page;
+	private Integer page;
 
 	/**
 	 * 页面显示最大数
 	 */
 	@Transient
-	private int size;
+	private Integer size;
 
 }
